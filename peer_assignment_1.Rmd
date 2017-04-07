@@ -1,0 +1,46 @@
+---
+title: "Reproducible Research: Peer Assessment 1"
+output: 
+  html_document:
+    keep_md: true
+---
+
+## Supporting Libraries
+```{r message=FALSE}
+library(ggplot2)
+library(dplyr)
+```
+## Loading and preprocessing the data
+```{r}
+sourceData <- read.csv("./activity.csv")
+sourceDataCleaned <- sourceData[complete.cases(sourceData),]
+dayGrouped <- group_by(sourceDataCleaned, date)
+periodGrouped <- group_by(sourceDataCleaned, interval)
+```
+## Histogram of the total number of steps taken each day
+```{r}
+dayTotalSteps <- aggregate( steps ~ date, dayGrouped, sum )
+totalStepsPlot <- ggplot(dayTotalSteps, aes(dayTotalSteps$steps)) 
+totalStepsPlot + geom_histogram(bins=length(unique(dayGrouped$date))) + xlab("Number of Steps") + ylab("Frequency")
+```
+
+## Mean and Median number of steps taken each day
+```{r}
+mean(sourceData$steps, na.rm = TRUE)
+median(sourceData$steps, na.rm = TRUE)
+```
+
+
+## What is the average daily activity pattern?
+```{r fig.width=12}
+periodAverageTotalSteps <- aggregate( steps ~ interval, periodGrouped, mean )
+totalStepsPlot <- ggplot(periodAverageTotalSteps, aes(interval, steps)) 
+totalStepsPlot + geom_line(stat = "identity") + xlab("Time of Day (minutes)") + ylab("Average Number of Steps")
+```
+
+
+## Imputing missing values
+
+
+
+## Are there differences in activity patterns between weekdays and weekends?
