@@ -5,12 +5,19 @@ output:
     keep_md: true
 ---
 
+## Author
+Elliot Francis  
+Created : 2017-4-7  
+Created For : Coursera Data Science Track - Reproduceable Research Week 2 Project  
+
 ## Supporting Libraries
 
 This analysis makes use of the ggplot2 and dplry libraries for plotting and grouping.
 ```{r message=FALSE}
 library(ggplot2)
 library(dplyr)
+library(grid)
+library(gridExtra)
 ```
 ## Loading and preprocessing the data
 
@@ -57,7 +64,8 @@ imputedSource <- sourceData
 imputedSource[naIndexes, "steps"] <- periodAverageTotalSteps[periodAverageTotalSteps$interval == imputedSource[naIndexes, "interval"], "steps"]
 ```
 
-## Histogram of the total number of steps taken each day (Imputed Data)
+## Histogram of the total number of steps taken each day 
+### (Using Imputed Data)
 ```{r}
 ## Group Imputed Data
 imputedDayGrouped <- group_by(imputedSource, date)
@@ -68,10 +76,43 @@ totalStepsPlot <- ggplot(imputedDayTotalSteps, aes(imputedDayTotalSteps$steps))
 totalStepsPlot + geom_histogram(bins=length(unique(imputedDayGrouped$date))) + xlab("Number of Steps (Imputed)") + ylab("Frequency")
 ```
 
-## Mean and Median number of steps taken each day (Imputed Data)
+## Mean and Median number of steps taken each day 
+### (Using Imputed Data)
 ```{r}
 mean(imputedSource$steps, na.rm = TRUE)
 median(imputedSource$steps, na.rm = TRUE)
 ```
 
 ## Are there differences in activity patterns between weekdays and weekends?
+### (Using Imputed Data)
+Now we generate the graphs for identifing step pattern differences in the weekdays and weekends.
+```{r}
+
+## Load Imputed Source
+weekdayJoined <- imputedSource
+## Join Weekday
+weekdayJoined$weekday <- weekdays(as.Date(weekdayJoined$date))
+## Weekday/Weekend Mapping Function
+isWeekday <- function (weekday) {
+  if(weekday == "Saturday") { return("Weekend") }
+  if(weekday == "Sunday") { return("Weekend") }
+  return("Weekday")
+}
+## Map Weekdays
+weekdayJoined$weekday <- sapply(weekdays(as.Date(weekdayJoined$date)), isWeekday)
+## Group Data
+weekdayGrouped <- group_by(weekdayJoined, weekday)
+
+## Plot Weekday Step Profile
+periodAverageTotalSteps <- aggregate( steps ~ interval, weekdayGrouped[weekdayGrouped$weekday == "Weekday",], mean )
+totalStepsWeekdayPlot <- ggplot(periodAverageTotalSteps, aes(interval, steps)) 
+totalStepsWeekdayPlot <- totalStepsWeekdayPlot + geom_line(stat = "identity") + xlab("Time of Day - Weekday (minutes)") + ylab("Average Number of Steps")
+
+## Plot Weekend Step Profile
+periodAverageTotalSteps <- aggregate( steps ~ interval, weekdayGrouped[weekdayGrouped$weekday == "Weekend",], mean )
+totalStepsWeekendPlot <- ggplot(periodAverageTotalSteps, aes(interval, steps)) 
+totalStepsWeekendPlot <- totalStepsWeekendPlot + geom_line(stat = "identity") + xlab("Time of Day - Weekend (minutes)") + ylab("Average Number of Steps")
+
+## Output Data In Grid
+grid.arrange(totalStepsWeekdayPlot,totalStepsWeekendPlot, nrow=2)
+```
