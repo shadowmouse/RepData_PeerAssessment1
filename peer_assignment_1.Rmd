@@ -6,11 +6,16 @@ output:
 ---
 
 ## Supporting Libraries
+
+This analysis makes use of the ggplot2 and dplry libraries for plotting and grouping.
 ```{r message=FALSE}
 library(ggplot2)
 library(dplyr)
 ```
 ## Loading and preprocessing the data
+
+The data is pulled from the source data file. The data is then cleaned (NA cases removed) and grouped by day and day period.
+
 ```{r}
 sourceData <- read.csv("./activity.csv")
 sourceDataCleaned <- sourceData[complete.cases(sourceData),]
