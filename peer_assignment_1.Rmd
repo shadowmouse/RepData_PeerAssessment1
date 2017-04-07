@@ -31,8 +31,8 @@ totalStepsPlot + geom_histogram(bins=length(unique(dayGrouped$date))) + xlab("Nu
 
 ## Mean and Median number of steps taken each day
 ```{r}
-mean(sourceData$steps, na.rm = TRUE)
-median(sourceData$steps, na.rm = TRUE)
+mean(sourceDataCleaned$steps, na.rm = TRUE)
+median(sourceDataCleaned$steps, na.rm = TRUE)
 ```
 
 
@@ -46,6 +46,32 @@ totalStepsPlot + geom_line(stat = "identity") + xlab("Time of Day (minutes)") + 
 
 ## Imputing missing values
 
+The source data is now imputed by inserting the period average into NA values.
 
+```{r}
+## Get indexs of NA values
+naIndexes <- which(is.na(sourceData$steps), arr.ind = TRUE)
+## Copy Source Data to Imputed Data Object
+imputedSource <- sourceData
+## Copy Period Average Data into NA fields based on NA value interval
+imputedSource[naIndexes, "steps"] <- periodAverageTotalSteps[periodAverageTotalSteps$interval == imputedSource[naIndexes, "interval"], "steps"]
+```
+
+## Histogram of the total number of steps taken each day (Imputed Data)
+```{r}
+## Group Imputed Data
+imputedDayGrouped <- group_by(imputedSource, date)
+## Aggregate Total Steps
+imputedDayTotalSteps <- aggregate( steps ~ date, imputedDayGrouped, sum )
+## Plot Results
+totalStepsPlot <- ggplot(imputedDayTotalSteps, aes(imputedDayTotalSteps$steps)) 
+totalStepsPlot + geom_histogram(bins=length(unique(imputedDayGrouped$date))) + xlab("Number of Steps (Imputed)") + ylab("Frequency")
+```
+
+## Mean and Median number of steps taken each day (Imputed Data)
+```{r}
+mean(imputedSource$steps, na.rm = TRUE)
+median(imputedSource$steps, na.rm = TRUE)
+```
 
 ## Are there differences in activity patterns between weekdays and weekends?
